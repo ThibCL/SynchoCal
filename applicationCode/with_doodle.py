@@ -11,6 +11,7 @@ import datetime
 import time
 
 
+#RECUPERATION DES CREANEAUX DOODLE
 
 def recup_creneaux(key):
     #1er janvier 1970 en date python : date de référence dans le systeme de date du Doodle
