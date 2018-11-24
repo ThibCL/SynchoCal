@@ -9,13 +9,19 @@
 
 {% block content %}
   {% for sondage in sondages %}
+  </br>
       <header>
         <div>
-          <h1>{{ sondage['titre'] }}</h1>
+          <h3>{{ sondage['titre'] }}</h3>
         </div>
       </header>
-      <p class="date_entree">{{ post['date_entree'] }}</p>
-    </article>
+      <p class="evenement"> Aouté le {{ sondage['date_entree'] }}
+      </br>{{ sondage['lieu'] }}
+      </br>{{ sondage['description'] }}</p>
+
+    <form action="{{ url_for('page_principale.mise_a_jour', key=sondage['key']) }}" method="post">
+      <input class="danger" type="submit" value = "Mettre à jour" onclick="return confirm('Voulez-vous mettre à jour?');">
+    </form>
     {% if not loop.last %}
       <hr>
     {% endif %}

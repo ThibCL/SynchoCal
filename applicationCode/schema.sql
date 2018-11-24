@@ -14,6 +14,7 @@ CREATE TABLE sondage (
   key TEXT UNIQUE NOT NULL,
   titre TEXT UNIQUE NOT NULL,
   date_entree DATETIME,
+  date_maj DATETIME,
   lieu TEXT,
   description TEXT,
   liste_options TEXT NOT NULL
