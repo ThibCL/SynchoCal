@@ -31,7 +31,7 @@ service = build('calendar', 'v3', http=creds.authorize(Http()))
 def conversion(eventdate,titre,lieu,description):
     res=[]
     for ki in range( len(eventdate)//2):
-       
+
         event2 = {
                       'summary': titre,
                       'location': lieu,
@@ -59,7 +59,7 @@ def conversion(eventdate,titre,lieu,description):
     return res
 
 
-def recupcreneaux( url, key): 
+def recupcreneaux( url, key):
     #1er janvier 1970 en date python
     a = datetime.datetime(1970, 1, 1)
 
@@ -69,7 +69,7 @@ def recupcreneaux( url, key):
     r = requests.get(url)
     l = json.loads(r.content)
     optionsHash=l["optionsHash"]
-    
+
 
     #la liste des options (créneaux) de notre doodle (vide pour l'instant)
     liste_options = []
@@ -82,23 +82,23 @@ def recupcreneaux( url, key):
 
     #les options du doodle sont stockées sous forme de listes (qu'on appelle temps ici) pour la clé "options" du dictionnaire l
     try:
-        #On regarde si le sondage est fermé ou pas 
+        #On regarde si le sondage est fermé ou pas
         t=l['closed']
 
         #Si le sondage est fermé on récupére tous les crénaux qui sont finaux
         for temps in l["options"]:
-            
+
             try:
                 #on vérifie si l'évenement est final
                 bool=temps['final']
 
-                
-                #Date et heure de commencement de l'évènement    
+
+                #Date et heure de commencement de l'évènement
                 secondesEnPlusDebut = int(str(temps["start"])[0:len(str(temps["start"]))])
-                
+
                 #Date et heure de fin de l'évènement
                 secondesEnPlusFin = int(str(temps["end"])[0:len(str(temps["end"]))])
-                
+
                 #On ajoute les deux à la liste des options
                 optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut)+3600000)
                 liste_options.append(optionDebut)
@@ -107,40 +107,41 @@ def recupcreneaux( url, key):
 
                 #On met par défaut au début que la paersonne est libre à tous les crénaux finaux
                 preferences.append(1)
-                #Vu qu'on récupère seulement les crénaux finaux on conserve leur place dans la liste des preference 
+                #Vu qu'on récupère seulement les crénaux finaux on conserve leur place dans la liste des preference
                 place.append(re)
 
             except:
                 #Si la date n'est pas final on ajoute 0 au préférence comme ça on ne se souci pas de ses dates
                 preferences.append(0)
 
+
             #Incrément qui représente le nombre de créneaux
-            re+=1    
-        
-        
+            re+=1
+
+
     except:
         #Si le sondage est toujours ouvert on récupère tous les créneaux du doodle
         for temps in l["options"]:
 
-            #Date et heure de commencement de l'évènement    
+            #Date et heure de commencement de l'évènement
             secondesEnPlusDebut = int(str(temps["start"])[0:len(str(temps["start"]))])
-            
+
             #Date et heure de fin de l'évènement
             secondesEnPlusFin = int(str(temps["end"])[0:len(str(temps["end"]))])
-            
+
             #On ajoute les deux à la liste des options
             optionDebut = a + datetime.timedelta(milliseconds = int(secondesEnPlusDebut)+3600000)
             liste_options.append(optionDebut)
             optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
             liste_options.append(optionFin)
 
-            #Par défault on met dans la liste des préférences par défaut qu'on est libre à aucun créneaux 
+            #Par défault on met dans la liste des préférences par défaut qu'on est libre à aucun créneaux
             preferences.append(0)
 
             #On ajoute la place de chaque créneau dans la liste des préference
             place.append(re)
             re+=1
-        
+
 
 
     #On stock les infos importantes du doodle
@@ -149,7 +150,7 @@ def recupcreneaux( url, key):
     description = l["description"]
 
 
-    
+
 
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indique le temps UTC
 
@@ -157,7 +158,7 @@ def recupcreneaux( url, key):
     i = 1
     eventdate=[]
     for option in liste_options :
-        
+
         if i%2==1 :
             debut=str(option)[0:10]+'T'+str(option)[11:20]+'+01:00'
             i+=1
@@ -166,20 +167,16 @@ def recupcreneaux( url, key):
             fin=str(option)[0:10]+'T'+str(option)[11:20]+'+01:00'
             events_result = service.events().list(calendarId='primary', timeMin=debut, timeMax=fin).execute()
             events = events_result.get('items', [])
-       
-            
+
+
             #Si il n'y a pas d'évènement dans le calendrier à ce créneau, on remplit le calendrier en réservant le créneau et on modifie la liste
             #preference en mettant 1 à la bonne place dans la liste
             if not events:
                 eventdate.append(debut)
                 eventdate.append(fin)
                 preferences[place[i//2-1]]=1
-                
-            
-            
-                
-                
-                    
+
+
             i+=1
             #on converti la liste des horaires des créneaux en liste des événements qu'on va envoyé au calendrier
             eventdate2=conversion(eventdate,titre,lieu,description)
@@ -191,24 +188,23 @@ def recupcreneaux( url, key):
 
 
 
-def reservecreneaux(eventdate, key):        
+
+def reservecreneaux(eventdate, key):
 
     #On écrit dans un fichier qui prend le nom de la clé du sondage tous les événement qqu'on a réservé dans le calendrier
     fichier=open(key+".txt","w")
-    
+
     eventtest=[]
     eventfinal=[]
 
-    #On parcours les evenement qu'on a convertit après avoir récupéré les dates des créneaux dans le doodle 
+    #On parcours les evenement qu'on a convertit après avoir récupéré les dates des créneaux dans le doodle
     for k in eventdate:
-        
+
         #On reserve le créneaux prévu dans le calendrier
         service.events().insert(calendarId='primary', body=k).execute()
 
         #On récupère les événement qu'on vient juste de résérver car lorsqu'on insère un evenenement il y a un id qui est créé par le calendrier et
         #on en a besoin pour effacer les evenement quand nécessaire
-
-        
         event=service.events().list(calendarId='primary', timeMin=k['start']['dateTime'], timeMax=k['end']['dateTime']).execute()['items']
         j=0
 
@@ -223,37 +219,32 @@ def reservecreneaux(eventdate, key):
         #On écrit dans le fichier les événement réservé
         fichier.write(str(event[j])+'\n')
 
-        
-
-
     fichier.close()
-    
-    
+
+
 
 #Cette fonction permet d'effacer du calendrier tous les créneaux reservés précedement à partir du doodle afin de tout recommencer lors d'une mis à jour
 def efface(key):
     #On ouvre le fichier qui stock tous les evn réservés
     f=open(key + ".txt" , "r")
 
-    #Et pour chaque ligne on efface l'événement à partir de son id 
+    #Et pour chaque ligne on efface l'événement à partir de son id
     for line in f:
         try:
             service.events().delete(calendarId='primary', eventId=eval(line)['id']).execute()
         except:
-            #Au cas ou le propriétaire du calendrier à supprimer l'evn à la main 
+            #Au cas ou le propriétaire du calendrier à supprimer l'evn à la main
             print('Déja sup')
     f.close()
-    
-    
-    
 
 
-    
-#Fonction qui permet de mettre à jour les réponses apportés au doodle et les evn réservés, par exemple si le doodle est modifié       
+
+#Fonction qui permet de mettre à jour les réponses apportés au doodle et les evn réservés, par exemple si le doodle est modifié
 def misajour(url,key,nom_utilisateur):
 
     #On commence par tout effacer dans le calendrier
     efface(key)
+
     #on récupère les créneaux ou on est libre
     eventts=recupcreneaux(url, key)
     #Et enfin on reserve dans le calendrier les créneaux libres
@@ -265,7 +256,7 @@ def misajour(url,key,nom_utilisateur):
     participantKey = "et5qinsv"
     optionsHash = eventts[2]
 
-    #On récupère tout le json du doodle pour retouver l'id de la personne considéré par la mise à jour 
+    #On récupère tout le json du doodle pour retouver l'id de la personne considéré par la mise à jour
     l=rq.get('https://doodle.com/api/v2.0/polls/dzvsdpkhe534rivt')
     ri=json.loads(l.content)
     li=0
@@ -278,16 +269,16 @@ def misajour(url,key,nom_utilisateur):
     envoi = {"id":ri['participants'][li]['id'],"name" : nom_utilisateur,
              "optionsHash" : optionsHash, "participantKey": participantKey,
              "preferences" : preferences}
-    
+
     #Url nécesssaire pour l'envoi des infos
     url2=url+"/participants/"+str(ri['participants'][li]['id'])
     #requête put qui modifie un post précedent
     ra = rq.put(url2, json = envoi)
     print("Sondage"+key+"mis à jour")
 
-            
-        
-    
+
+
+
 
 
 def main():
@@ -311,8 +302,7 @@ def main():
         print("on créé le compte")
         fv=open(nom_utilisateur+mdp+'.txt',"w")
         fv.close()
-            
-        
+
 
     #Dans tous les cas on demande si la personne veut ajouter un nouveau sondage
     print("voulez vous ajouter un sondage? o/n")
@@ -324,12 +314,12 @@ def main():
         #on écrit la clé du sondage dans le fichier
         fi.write(key+'\n')
         fi.close()
-    
+
 
         #url du sondage
         url = "https://doodle.com/api/v2.0/polls/" + key
 
-        #on récupère les créneaux ou on est libre 
+        #on récupère les créneaux ou on est libre
         eventts=recupcreneaux(url,key)
 
         #On réserve les créneaux ou on est disponible
@@ -352,18 +342,18 @@ def main():
         #requête post pour écrire pour la première fois dans le doodle
         ri = rq.post(url2, json = envoi)
         print(ri.text)
-    
-        
-    
+
+
+
 
 """    try:
-        
+
         f=open(key+".txt","r")
         print("b")
         f.close()
-        
+
         misajour(url,key,nom_utilisateur)
-        
+
 
     except:
         eventts=recupcreneaux(url,key)
@@ -372,7 +362,7 @@ def main():
         preferences = eventts[1]
         participantKey = "et5qinsv"
         optionsHash =eventts[2]
-        
+
         envoi = {"name" : nom_utilisateur, "preferences" :
         preferences, "participantKey" : participantKey,
         "optionsHash" : optionsHash}
@@ -381,6 +371,3 @@ def main():
         url2=url+"/participants"
         ri = rq.post(url2, json = envoi)
         print(ri.text)"""
-
-    
-

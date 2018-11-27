@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+  <a href="{{ url_for('page_principale') }}">Retour</a>
   <form method="post">
     <label for="key">Entrez la clé du sondage (ex : 6vgqnfnqxait989w)</label>
     <input name="key" id="key" required>

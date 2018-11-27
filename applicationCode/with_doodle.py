@@ -11,6 +11,7 @@ import datetime
 import time
 
 
+#RECUPERATION DES CREANEAUX DOODLE LORS DU PREMIER AJOUT DE CELUI CI
 
 def recup_creneaux(key):
     #1er janvier 1970 en date python : date de référence dans le systeme de date du Doodle
@@ -26,16 +27,23 @@ def recup_creneaux(key):
     r = requests.get(url)
     l = json.loads(r.content)
 
+    #C'est quoi ?
+    optionsHash=l["optionsHash"]
 
     #la liste des options (créneaux) de notre doodle (vide pour l'instant)
     liste_options = []
+
+    #c'est quoi ??
+    preferences=[]
+    place=[]
+    re=0
 
     #on vérifie si le doodle est deja termine ou non
     #si le doodle est terminé on n'est pas concerné par celui-ci
     try :
         #la clé closed n'est présente que si le sondage est fini
         l["closed"]
-        liste_options_finales = []
+        est_final = True
 
     #si le doodle n'est pas terminé on récupère les options
     except :
@@ -55,17 +63,22 @@ def recup_creneaux(key):
             liste_options.append(optionDebut)
             optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
             liste_options.append(optionFin)
+            preferences.append(1)
+            place.append(re)
 
-            #titre du Doodle
+            #titre de l'évènement du Doodle
             titre = l["title"]
 
-            #lieu du Doodle
+            #lieu de l'évènement du Doodle
             lieu = l["location"]["name"]
 
-            #description du Doodle
+            #description de l'évènement du Doodle
             description = l["description"]
 
     return [titre, lieu, description, liste_options]
 
 def main():
-    recup_creneau('dzvsdpkhe534rivt')
+    print('début')
+    sond = recup_creneau('8e6u8t3qeu8b8w3t')
+    for s in sond :
+        print(s)
