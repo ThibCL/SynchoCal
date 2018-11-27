@@ -6,6 +6,7 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from applicationCode.db import get_db
+from . import with_calendar
 
 #creation d'un blueprint nommé "auth", associé à l'URL /auth
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -34,6 +35,7 @@ def inscription():
                 (username, generate_password_hash(password))
             )
             db.commit()
+            with_calendar.connection_cal()
             return redirect(url_for('auth.login'))
 
         flash(error)

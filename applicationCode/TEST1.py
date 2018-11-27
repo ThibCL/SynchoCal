@@ -77,7 +77,6 @@ def recupcreneaux( url, key):
     #la liste préférence est la liste qu'il faut envoyer au doodle pour remplir le doodle
     preferences=[]
     place=[]
-    test= True
     re=0
 
     #les options du doodle sont stockées sous forme de listes (qu'on appelle temps ici) pour la clé "options" du dictionnaire l

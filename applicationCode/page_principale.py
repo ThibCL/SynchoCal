@@ -6,6 +6,7 @@ from werkzeug.exceptions import abort
 from applicationCode.auth import login_required
 from applicationCode.db import get_db
 from datetime import datetime
+from . import with_doodle
 
 bp = Blueprint('page_principale', __name__)
 
