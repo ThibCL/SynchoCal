@@ -5,7 +5,6 @@ from werkzeug.exceptions import abort
 
 from applicationCode.auth import login_required
 from applicationCode.db import get_db
-from . import with_doodle
 from datetime import datetime
 
 bp = Blueprint('page_principale', __name__)
@@ -14,14 +13,16 @@ bp = Blueprint('page_principale', __name__)
 
 #Elle affiche l'ensemble de ses sondages en cours
 @bp.route('/')
+@login_required
 def liste_sondages():
     db = get_db()
     sondages = db.execute(
-        'SELECT * FROM sondage JOIN (SELECT su.sondage_key AS s_key FROM user JOIN sondage_user su ON user.id=su.user_id) sond ON sondage.key=sond.s_key'
+        'SELECT * FROM sondage JOIN (SELECT su.sondage_key AS s_key FROM sondage_user su WHERE su.user_id = (?)) sond'
+        ' ON sondage.key=sond.s_key', (g.user['id'],)
     ).fetchall()
     return render_template('liste_sondages.html', sondages=sondages)
 
-
+#(SELECT su.sondage_key AS s_key FROM sondage_user su WHERE su.user_id = ?) sond
 #L'utilisateur peut ajouter des sondages à partir de leur clé ("key")
 @bp.route('/ajouter', methods=('GET', 'POST'))
 @login_required
@@ -43,11 +44,11 @@ def ajouter():
             flash(error)
         else:
             #sond = with_doodle.recup_creneau(key)
-            titre ='Titre du sondage test3'
+            titre ='Titre du sondage test1'
             date=datetime.now().date()
-            lieu = 'Nantes'
-            description = 'C\'est la description du sondage test3'
-            liste_options='Liste des options écrites dans une chaine de caractère test3'
+            lieu = 'Paris'
+            description = 'C\'est la description du sondage test1'
+            liste_options='Liste des options écrites dans une chaine de caractère test1'
             db.execute(
                 'INSERT INTO sondage (key, titre, date_entree, lieu, description, liste_options)'
                 ' VALUES (?, ?, ?, ?, ?, ?)',
