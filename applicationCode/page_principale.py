@@ -44,15 +44,15 @@ def ajouter():
             flash(error)
         else:
             #sond = with_doodle.recup_creneau(key)
-            titre ='Titre du sondage test1'
+            titre ='Titre du sondage test2'
             date=datetime.now().date()
             lieu = 'Paris'
             description = 'C\'est la description du sondage test1'
             liste_options='Liste des options écrites dans une chaine de caractère test1'
             db.execute(
-                'INSERT INTO sondage (key, titre, date_entree, lieu, description, liste_options)'
-                ' VALUES (?, ?, ?, ?, ?, ?)',
-                (key, titre, date, lieu, description, liste_options)
+                'INSERT INTO sondage (key, titre, date_entree, date_maj, lieu, description, liste_options)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+                (key, titre, date, date, lieu, description, liste_options)
             )
             db.execute(
                 'INSERT INTO sondage_user (sondage_key, user_id)'
@@ -71,10 +71,22 @@ def mise_a_jour(key):
     db = get_db()
     #fonction de mise à jour du sondage
     desc = 'Le sondage a été mis à jour'
+    date_maj=datetime.now().date()
     db.execute(
-                'UPDATE sondage SET description = ?'
+                'UPDATE sondage SET description = ?, date_maj = ?'
                 ' WHERE key = ?',
-                (desc, key)
+                (desc, date_maj,key)
+            )
+    db.commit()
+    return redirect(url_for('page_principale'))
+
+#L'utilisateur peut supprimer ses sondages si il le souhaite
+@bp.route('/<string:key>/supprimer', methods=('POST',))
+@login_required
+def supprimer(key):
+    db = get_db()
+    db.execute(
+                'DELETE FROM sondage WHERE key = ?',(key,)
             )
     db.commit()
     return redirect(url_for('page_principale'))
