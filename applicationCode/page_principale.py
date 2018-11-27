@@ -20,6 +20,7 @@ def liste_sondages():
 @bp.route('/ajouter', methods=('GET', 'POST'))
 @login_required
 def ajouter():
+    error = None
     if request.method == 'POST':
         key = request.form['key']
 
