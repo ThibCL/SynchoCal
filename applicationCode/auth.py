@@ -35,7 +35,6 @@ def inscription():
                 (username, generate_password_hash(password))
             )
             db.commit()
-            with_calendar.connection_cal()
             return redirect(url_for('auth.login'))
 
         flash(error)

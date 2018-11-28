@@ -45,7 +45,7 @@ def ajouter():
             flash(error)
         else:
             #sond = with_doodle.recup_creneau(key)
-            titre ='Titre du sondage test2'
+            titre ='Titre du sondage test45'
             date=datetime.now().date()
             lieu = 'Paris'
             description = 'C\'est la description du sondage test1'
