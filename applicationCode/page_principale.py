@@ -38,11 +38,12 @@ def ajouter():
             lieu=sond[4]
             description=sond[5]
             liste_options=sond[5]
+            date=datetime.now().date()
             db = get_db()
             db.execute(
-                'INSERT INTO sondage (key, titre, lieu, description,liste_options)'
+                'INSERT INTO sondage (key, titre, lieu, description,liste_options,date_maj)'
                 ' VALUES (?, ?, ?, ?, ?)',
-                (key, titre, lieu, description,liste_options)
+                (key, titre, lieu, description,liste_options,date)
 
             )
             db.commit()

@@ -12,7 +12,11 @@ Pour faire fonctionner l'application WEB :
     py -m flask init-db
 
 5) Pour pouvoir utiliser l'application, placer le fichier credentials.json dans le même dossier que l'application (dans le dossier applicationCode)
-cf. rapport partie "Connection du calendrier Google à Python via l’API" 
+cf. rapport partie "Connection du calendrier Google à Python via l’API"
 
 6) Pour lancer l'application, se placer dans le répertoire de l'application et executer dans l'invite de commande :
     py -m flask run
+
+7) Pour permettre à l'application de fonctionner, il faut télécharger certains modules :
+    pip install --upgrade google-api-python-client oauth2client
+    pip install requests

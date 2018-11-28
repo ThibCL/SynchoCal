@@ -9,10 +9,6 @@ import time
 import requests as rq
 
 
-#RECUPARATION DES CRENEAUX DU DOODLE
-
-
-
 #RECUPERATION DES DISPONIBILITES DE L'UTILISATEUR SUR CES CRENEAUX
 
 # If modifying these scopes, delete the file token.json.

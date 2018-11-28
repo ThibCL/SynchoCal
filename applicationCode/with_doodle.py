@@ -1,6 +1,5 @@
 #Ce fichier contient toutes les fonctions d'intéraction avec le sondage Doodle
 
-
 from __future__ import print_function
 from googleapiclient.discovery import build
 from httplib2 import Http
@@ -52,7 +51,6 @@ def conversion(eventdate,titre,lieu,description):
 
 
 
-#RECUPERATION DES CREANEAUX DOODLE LORS DU PREMIER AJOUT DE CELUI CI
 
 def remplissage_doodle(preferences,optionsHash,key):
     participantKey = "et5qinsv"
@@ -95,17 +93,24 @@ def recup_creneau( key):
     #la liste des options (créneaux) de notre doodle (vide pour l'instant)
     liste_options = []
 
-    #la liste préférence est la liste qu'il faut envoyer au doodle pour remplir le doodle
+    #la liste préférences est la liste de 0 et/ou 1 qu'il faut envoyer au Doodle pour le remplir
     preferences=[]
+
+    #représente les places des créneaux finaux dans la liste des préférences
     place=[]
+
+    #compteur représentant le nombre de créneaux
     re=0
 
-    #les options du doodle sont stockées sous forme de listes (qu'on appelle temps ici) pour la clé "options" du dictionnaire l
+
+    #D'abord, on récupère la liste des dates des débuts et des fins (alternées 2 à 2) des évènements du Doodles.
+    #On distingue le cas ou le Doodle est fermé ou non
+
     try:
         #On regarde si le sondage est fermé ou pas
         t=l['closed']
 
-        #Si le sondage est fermé on récupére tous les crénaux qui sont finaux
+        #Si le sondage est fermé on récupère tous les crénaux qui sont finaux
         for temps in l["options"]:
 
             try:
@@ -125,17 +130,15 @@ def recup_creneau( key):
                 optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
                 liste_options.append(optionFin)
 
-                #On met par défaut au début que la paersonne est libre à tous les crénaux finaux
+                #Au début, on met par défaut que la personne est libre à tous les crénaux finaux
                 preferences.append(1)
-                #Vu qu'on récupère seulement les crénaux finaux on conserve leur place dans la liste des preference
+                #Vu qu'on récupère seulement les crénaux finaux on conserve leur place dans la liste des preferences
                 place.append(re)
 
             except:
-                #Si la date n'est pas final on ajoute 0 au préférence comme ça on ne se souci pas de ses dates
+                #Si la date n'est pas finale on ajoute 0 aux préférences, et nous n'avons donc pas à nous soucier des dates non-finales
                 preferences.append(0)
 
-
-            #Incrément qui représente le nombre de créneaux
             re+=1
 
 
@@ -155,7 +158,7 @@ def recup_creneau( key):
             optionFin = a + datetime.timedelta(milliseconds = int(secondesEnPlusFin)+3600000)
             liste_options.append(optionFin)
 
-            #Par défault on met dans la liste des préférences par défaut qu'on est libre à aucun créneaux
+            #Par défault on met dans la liste des préférences qu'on est libre à aucun créneaux
             preferences.append(0)
 
             #On ajoute la place de chaque créneau dans la liste des préference
@@ -164,35 +167,37 @@ def recup_creneau( key):
 
 
 
-    #On stock les infos importantes du doodle
+    #On stocke les infos importantes du doodle
     titre = l["title"]
-    try:
+    try :
         lieu = l["location"]["name"]
     except:
-        lieu= "Pas de lieu spécifié"
+        lieu = "Pas de lieu spécifié"
     try:
         description = l["description"]
     except:
-        description="Pas de description"
+        description = "Pas de description spécifiée"
 
-
-
+    #On récupère la date actuelle en format adapté aux dates du Doodle
     now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indique le temps UTC
 
-    #Nous récupérons les évènements du calendrier sur les créneaux donnés par le Doodle
+    #Nous récupérons les évènements du calendrier sur les créneaux récupérés dans listes_options
+
     i = 1
     eventdate=[]
     for option in liste_options :
 
+        #si i est pair, c'est une date de début
         if i%2==1 :
             debut=str(option)[0:10]+'T'+str(option)[11:20]+'+01:00'
             i+=1
 
+        #si i est impair c'est une date de fin
         else :
             fin=str(option)[0:10]+'T'+str(option)[11:20]+'+01:00'
+            #on récupère les évènement du calendrier se situant entre début et fin (même s'ils commencent ou terminent après)
             events_result = service.events().list(calendarId='primary', timeMin=debut, timeMax=fin).execute()
             events = events_result.get('items', [])
-
 
             #Si il n'y a pas d'évènement dans le calendrier à ce créneau, on remplit le calendrier en réservant le créneau et on modifie la liste
             #preference en mettant 1 à la bonne place dans la liste
