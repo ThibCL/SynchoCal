@@ -18,7 +18,7 @@ def inscription():
         username = request.form['username']
         password = request.form['password']
         db = get_db()
-        error = None
+        error=None
 
         if not username:
             error = 'Veuillez entrer un nom d\'utilisateur.'
@@ -35,6 +35,7 @@ def inscription():
                 (username, generate_password_hash(password))
             )
             db.commit()
+
             with_calendar.connection_cal()
             return redirect(url_for('auth.login'))
 

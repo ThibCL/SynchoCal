@@ -1,5 +1,7 @@
 #Ce fichier contient toutes les fonctions d'intéraction avec le calendrier
 
+from __future__ import print_function
+import json
 import datetime
 from googleapiclient.discovery import build
 from httplib2 import Http
@@ -16,3 +18,5 @@ def connection_cal():
         flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
         creds = tools.run_flow(flow, store)
     service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+    return service

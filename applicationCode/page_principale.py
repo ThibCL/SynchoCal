@@ -5,66 +5,55 @@ from werkzeug.exceptions import abort
 
 from applicationCode.auth import login_required
 from applicationCode.db import get_db
-from datetime import datetime
 from . import with_doodle
+from datetime import datetime
 
 bp = Blueprint('page_principale', __name__)
 
-#Cette page est la page principale à laquelle accède l'utilisateur lorsqu'il est connecté
-
-#Elle affiche l'ensemble de ses sondages en cours
 @bp.route('/')
-@login_required
 def liste_sondages():
     db = get_db()
     sondages = db.execute(
-        'SELECT * FROM sondage JOIN (SELECT su.sondage_key AS s_key FROM sondage_user su WHERE su.user_id = (?)) sond'
-        ' ON sondage.key=sond.s_key', (g.user['id'],)
+        'SELECT * FROM sondage'
     ).fetchall()
     return render_template('liste_sondages.html', sondages=sondages)
 
-#(SELECT su.sondage_key AS s_key FROM sondage_user su WHERE su.user_id = ?) sond
-#L'utilisateur peut ajouter des sondages à partir de leur clé ("key")
 @bp.route('/ajouter', methods=('GET', 'POST'))
 @login_required
 def ajouter():
-    error = None
+    error=None
     if request.method == 'POST':
         key = request.form['key']
-        error = None
-        db = get_db()
+        print(key)
 
         if not key:
             error = 'Veuillez entrer la clé du sondage.'
 
-        elif db.execute(
-            'SELECT key FROM sondage WHERE key = ?', (key,)
-        ).fetchone() is not None:
-            error = 'Le sondage dont la clé est {} existe déjà !'.format(key)
-
         if error is not None:
             flash(error)
         else:
-            #sond = with_doodle.recup_creneau(key)
-            titre ='Titre du sondage test2'
-            date=datetime.now().date()
-            lieu = 'Paris'
-            description = 'C\'est la description du sondage test1'
-            liste_options='Liste des options écrites dans une chaine de caractère test1'
+            sond = with_doodle.recup_creneau(key)
+
+            titre=sond[3]
+            lieu=sond[4]
+            description=sond[5]
+            liste_options=sond[5]
+            db = get_db()
             db.execute(
-                'INSERT INTO sondage (key, titre, date_entree, date_maj, lieu, description, liste_options)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (key, titre, date, date, lieu, description, liste_options)
-            )
-            db.execute(
-                'INSERT INTO sondage_user (sondage_key, user_id)'
-                ' VALUES (?, ?)',
-            (key, g.user['id'])
+                'INSERT INTO sondage (key, titre, lieu, description,liste_options)'
+                ' VALUES (?, ?, ?, ?, ?)',
+                (key, titre, lieu, description,liste_options)
+
             )
             db.commit()
-            return redirect(url_for('page_principale'))
+            crenau_reserve=with_doodle.reserve_creneaux(sond[0],key)
+
+            #Ajouter les creneau reserve à la base de donnée!
+
+            return redirect(url_for('page_principale.liste_sondages'))
 
     return render_template('ajouter.html')
+
 
 #L'utilisateur peut mettre à jour ses sondages afin d'actualiser les changements qu'il y aurait pu avoir, ou de voir si il est final
 @bp.route('/<string:key>/mise_a_jour', methods=('POST',))
@@ -80,6 +69,10 @@ def mise_a_jour(key):
                 (desc, date_maj,key)
             )
     db.commit()
+
+    creneau_reserve=with_doodle.mise_a_jour(key, "bob")
+    #Remettre dans la base de donnée les nouveaux créneaux résérvésc
+
     return redirect(url_for('page_principale'))
 
 #L'utilisateur peut supprimer ses sondages si il le souhaite

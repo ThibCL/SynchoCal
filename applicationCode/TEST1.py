@@ -21,7 +21,7 @@ SCOPES = 'https://www.googleapis.com/auth/calendar'
 store = file.Storage('token.json')
 creds = store.get()
 if not creds or creds.invalid:
-    flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+    flow = client.flow_from_clientsecrets('credentialsthib.json', SCOPES)
     creds = tools.run_flow(flow, store)
 service = build('calendar', 'v3', http=creds.authorize(Http()))
 
@@ -58,7 +58,8 @@ def conversion(eventdate,titre,lieu,description):
         res.append(event2)
     return res
 
-
+#Cette fonction renvoie la liste des évenement à reserver dans le calendrier, la liste des préférences à envoyer au doodle et l'optionhash qui est utile
+#pour ecrire dans un doodle.
 def recupcreneaux( url, key):
     #1er janvier 1970 en date python
     a = datetime.datetime(1970, 1, 1)
@@ -181,8 +182,6 @@ def recupcreneaux( url, key):
             eventdate2=conversion(eventdate,titre,lieu,description)
 
 
-    #Cette fonction renvoie la liste des évenement à reserver dans le calendrier, la liste des préférences à envoyer au doodle et l'optionhash qui est utile
-    #pour ecrire dans un doodle.
     return eventdate2,preferences,optionsHash
 
 
@@ -193,7 +192,7 @@ def reservecreneaux(eventdate, key):
     #On écrit dans un fichier qui prend le nom de la clé du sondage tous les événement qqu'on a réservé dans le calendrier
     fichier=open(key+".txt","w")
 
-    eventtest=[]
+
     eventfinal=[]
 
     #On parcours les evenement qu'on a convertit après avoir récupéré les dates des créneaux dans le doodle
