@@ -1,1 +1,1 @@
-web: bundle exec rails server
+web: python manage.py runserver
